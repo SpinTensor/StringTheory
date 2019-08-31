@@ -24,6 +24,7 @@ typedef struct {
    int fft_outsize;
    // outputdata for the fft
    fftw_complex* fft_outdata;
+   double* freqs;
    // fourier transformation plan
    fftw_plan fftw_plan;
 } audio_t;

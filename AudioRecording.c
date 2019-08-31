@@ -102,11 +102,13 @@ void plot_datad(double* data, int offset, int scale, SDL_Renderer* renderer){
 
 void plot_datac(fftw_complex* data, int offset, int scale, SDL_Renderer* renderer){
    SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-   int yold = ((int) (sqrt(data[0][0]*data[0][0] + data[0][1]*data[0][1])*scale));
-   //int yold = 100;
+   double rep = data[0][0];
+   double imp = data[0][1];
+   int yold = ((int) (sqrt(rep*rep+imp*imp)*scale));
    for (int i=1; i<SCREEN_WIDTH/2; i++){
-      int ynew = ((int) (sqrt(data[i][0]*data[i][0] + data[i][1]*data[i][1])*scale));
-      //int ynew = -yold;
+      rep = data[i][0];
+      imp = data[i][1];
+      int ynew = ((int) (sqrt(rep*rep+imp*imp)*scale));
       SDL_RenderDrawLine(renderer, 2*(i-1), offset-yold, 2*i, offset-ynew);
       yold = ynew;
    }

@@ -50,6 +50,12 @@ audio_t init_audio(int buffersize){
       audiodata.fft_outdata[i][0] = 0.0;
       audiodata.fft_outdata[i][1] = 0.0;
    }
+   // precompute frequencies
+   audiodata.freqs = (double*)malloc(audiodata.fft_outsize*sizeof(double));
+   double dtirn = audiodata.audiodevice.freq/audiodata.fft_outsize;
+   for (int i=0; i<audiodata.fft_outsize; i++) {
+      audiodata.freqs[i] = ((double)(i))*dtirn;
+   }
 
    // creating the fftw_plan
    audiodata.fftw_plan = 
