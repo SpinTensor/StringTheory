@@ -5,49 +5,21 @@
 #include <math.h>
 
 #include "fftw3.h"
+#include "handleaudio.h"
 
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 768
-#define FPS 50
+#define FPS 60
 
 const unsigned int mspf = 1000/FPS;
 
-static SDL_AudioDeviceID devid_in = 0;
-static SDL_AudioSpec want;
-static SDL_AudioSpec spec;
-
-void plot_data(Uint8* data, int offset, int scale, SDL_Renderer* renderer);
+void plot_dataf(float* data, int offset, int scale, SDL_Renderer* renderer);
+void plot_datad(double* data, int offset, int scale, SDL_Renderer* renderer);
+void plot_datac(fftw_complex* data, int offset, int scale, SDL_Renderer* renderer);
 
 int main(){
 
-   double pi = acos(0.0);
-
-   bool tmpbool;
-
-   Uint8* buffer=(Uint8*)malloc(SCREEN_WIDTH*sizeof(Uint8));
-   Uint8* fftbuffer=(Uint8*)malloc(SCREEN_WIDTH*sizeof(Uint8));
-   for (int i=0; i<SCREEN_WIDTH; i++) {
-      buffer[i] = 0;
-   }
-
-   int fftsize = 2*SCREEN_WIDTH;
-   double* indata = fftw_alloc_real(fftsize);
-   fftw_complex* outdata = fftw_alloc_complex(fftsize/2);
-   for (int i=0; i<fftsize; i++) {
-      indata[i] = 0.0;
-   }
-   for (int i=0; i<fftsize/2; i++) {
-      outdata[0][i] = 0.0;
-      outdata[1][i] = 0.0;
-   }
-
-   fftw_plan audiospec_plan = 
-      fftw_plan_dft_r2c_1d(fftsize,         //number of elements
-                           indata,          //input data
-                           outdata,         //output data
-                           FFTW_ESTIMATE);   //FFTW algorithm
-
-   tmpbool = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0;
+   bool tmpbool = (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0);
    if (tmpbool) {
       SDL_Window* window = NULL;
       SDL_Renderer* renderer = NULL;
@@ -57,24 +29,7 @@ int main(){
       if (tmpbool){
          SDL_bool done = SDL_FALSE;
          
-         // open input audio device
-         SDL_zero(want);
-         want.freq = 41000;
-         want.format = AUDIO_S8;
-         want.channels = 1;
-         want.samples = SCREEN_WIDTH;
-         want.callback = NULL;
-         SDL_zero(spec);
-
-         devid_in = SDL_OpenAudioDevice(NULL, SDL_TRUE, &want, &spec, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
-         printf("freq: %d\n", spec.freq);
-         printf("format: %d\n", spec.format);
-         printf("channels: %d\n", spec.channels);
-         printf("silence: %d\n", spec.silence);
-         printf("samples: %d\n", spec.samples);
-         SDL_PauseAudioDevice(devid_in, SDL_FALSE);
-         //SDL_ClearQueuedAudio(devid_in);
-
+         audio_t audiodata = init_audio(SCREEN_WIDTH);
 
          unsigned int frameStart, frameEnd;
          frameStart = SDL_GetTicks();
@@ -84,26 +39,10 @@ int main(){
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
 
-            //SDL_PauseAudioDevice(devid_in, SDL_FALSE);
-            SDL_DequeueAudio(devid_in, buffer, SCREEN_WIDTH*sizeof(Uint8));
-            //SDL_PauseAudioDevice(devid_in, SDL_TRUE);
-            SDL_ClearQueuedAudio(devid_in);
-
-            //printf("%d\n", buffer[0]);
-            plot_data(buffer, 7*SCREEN_HEIGHT/8, 1, renderer);
-            double nr = 1.0/SCREEN_WIDTH;
-            for (int i=0;i<SCREEN_WIDTH; i++) {
-               double w = 0.5 - 0.5*cos(2.0*pi*i*nr);
-               indata[i] = buffer[i]-spec.silence;
-               indata[i] *= w;
-            }
-            fftw_execute(audiospec_plan);
-            for (int i=0;i<SCREEN_WIDTH; i++) {
-               double tmp;
-               tmp = outdata[i][0]*outdata[i][0]+outdata[i][1]*outdata[i][1];
-               fftbuffer[i] = 0.1*sqrt(tmp);
-            }
-            plot_data(fftbuffer, 3*SCREEN_HEIGHT/8, 1, renderer);
+            get_audio_data(audiodata);
+            plot_dataf(audiodata.audiobuffer, 1*SCREEN_HEIGHT/4, 100, renderer);
+            plot_datad(audiodata.fft_indata, 2*SCREEN_HEIGHT/4, 100, renderer);
+            plot_datac(audiodata.fft_outdata, 3*SCREEN_HEIGHT/4, 20, renderer);
 
             SDL_RenderPresent(renderer);
 
@@ -119,6 +58,7 @@ int main(){
             }
             frameStart=SDL_GetTicks();
          }
+         free_audio(&audiodata);
       }
 
       if (renderer) {
@@ -127,8 +67,6 @@ int main(){
       if (window) {
          SDL_DestroyWindow(window);
       }
-      SDL_PauseAudioDevice(devid_in, SDL_TRUE);
-      SDL_CloseAudioDevice(devid_in);
    }
    SDL_Quit();
 
@@ -136,12 +74,40 @@ int main(){
    
 }
 
-void plot_data(Uint8* data, int offset, int scale, SDL_Renderer* renderer){
+void plot_dataf(float* data, int offset, int scale, SDL_Renderer* renderer){
    SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-   int yold = offset - ((int) (data[0]/scale));
+   int yold = ((int) (data[0]*scale));
+   //int yold = 100;
    for (int i=1; i<SCREEN_WIDTH; i++){
-      int ynew = offset - ((int) (data[i]/scale));
-      SDL_RenderDrawLine(renderer, i-1, yold, i, ynew);
+      int ynew = ((int) (data[i]*scale));
+      //int ynew = -yold;
+      SDL_RenderDrawLine(renderer, i-1, offset-yold, i, offset-ynew);
+      yold = ynew;
+   }
+   return;
+}
+
+void plot_datad(double* data, int offset, int scale, SDL_Renderer* renderer){
+   SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+   int yold = ((int) (data[0]*scale));
+   //int yold = 100;
+   for (int i=1; i<SCREEN_WIDTH; i++){
+      int ynew = ((int) (data[i]*scale));
+      //int ynew = -yold;
+      SDL_RenderDrawLine(renderer, i-1, offset-yold, i, offset-ynew);
+      yold = ynew;
+   }
+   return;
+}
+
+void plot_datac(fftw_complex* data, int offset, int scale, SDL_Renderer* renderer){
+   SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+   int yold = ((int) (sqrt(data[0][0]*data[0][0] + data[0][1]*data[0][1])*scale));
+   //int yold = 100;
+   for (int i=1; i<SCREEN_WIDTH/2; i++){
+      int ynew = ((int) (sqrt(data[i][0]*data[i][0] + data[i][1]*data[i][1])*scale));
+      //int ynew = -yold;
+      SDL_RenderDrawLine(renderer, 2*(i-1), offset-yold, 2*i, offset-ynew);
       yold = ynew;
    }
    return;
