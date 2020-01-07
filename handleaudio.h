@@ -30,7 +30,7 @@ typedef struct {
 } audio_t;
 
 
-audio_t init_audio(int buffersize);
+audio_t init_audio(int requests_per_second);
 
 void get_audio_data(audio_t audiodata);
 

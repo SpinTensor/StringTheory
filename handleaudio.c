@@ -6,16 +6,8 @@
 #include "mp_constants.h"
 #include "handleaudio.h"
 
-audio_t init_audio(int buffersize){
+audio_t init_audio(int requests_per_second){
    audio_t audiodata;
-
-   // set audio buffer size
-   audiodata.buffsize = buffersize;
-   audiodata.audiobuffer = (float*)malloc(audiodata.buffsize*sizeof(float));
-   // fill with zeros
-   for (int i=0; i<audiodata.buffsize; i++){
-      audiodata.audiobuffer[i] = 0.0;
-   }
 
    // wanted audio input devide specifications
    SDL_zero(audiodata.wanteddev);
@@ -33,6 +25,16 @@ audio_t init_audio(int buffersize){
                           &(audiodata.wanteddev),    // wanted audio specifications
                           &(audiodata.audiodevice),  // delivered audio specifications
                           SDL_AUDIO_ALLOW_FORMAT_CHANGE);
+//printf("wanted freq: %d\n", audiodata.wanteddev.freq);
+//printf("actual freq: %d\n", audiodata.audiodevice.freq);
+
+   // set audio buffer size
+   audiodata.buffsize = audiodata.audiodevice.freq / requests_per_second;
+   audiodata.audiobuffer = (float*)malloc(audiodata.buffsize*sizeof(float));
+   // fill with zeros
+   for (int i=0; i<audiodata.buffsize; i++){
+      audiodata.audiobuffer[i] = 0.0;
+   }
 
    // Prepare fourier transform
    // is twice as big due to zero padding for non periodic fft
