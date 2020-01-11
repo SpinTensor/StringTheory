@@ -6,6 +6,7 @@
 
 #include "audio_IO.h"
 #include "fft.h"
+#include "freq_estimator.h"
 
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 768
@@ -60,7 +61,7 @@ int main(){
                   max_freq_i = i;
                }
             }
-//printf("Frequency: %f %f\n", fftdata.freqs[max_freq_i], estimate_freq(fftdata));
+printf("Frequency: %f %f\n", fftdata.freqs[max_freq_i], estimate_freq(fftdata));
 fflush(stdout);
 
             SDL_RenderPresent(renderer);
