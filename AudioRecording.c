@@ -4,12 +4,12 @@
 
 #include <math.h>
 
-#include "fftw3.h"
 #include "handleaudio.h"
+#include "fft.h"
 
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 768
-#define FPS 5
+#define FPS 10
 
 const unsigned int mspf = 1000/FPS;
 
@@ -29,8 +29,9 @@ int main(){
       if (tmpbool){
          SDL_bool done = SDL_FALSE;
          
-         //audio_t audiodata = init_audio(SCREEN_WIDTH);
-         audio_t audiodata = init_audio(FPS);
+         //audio_IO_t audiodata = init_audio(SCREEN_WIDTH);
+         audio_IO_t audiodata = init_audio(FPS);
+         fft_t fftdata = init_fft(audiodata.buffsize, 1.0/(audiodata.audiodevice.freq));
 
          unsigned int frameStart, frameEnd;
          frameStart = SDL_GetTicks();
@@ -41,24 +42,25 @@ int main(){
             SDL_RenderClear(renderer);
 
             get_audio_data(audiodata);
-            plot_dataf(audiodata.audiobuffer, 1*SCREEN_HEIGHT/4, 100, renderer);
-            plot_datad(audiodata.fft_indata, 2*SCREEN_HEIGHT/4, 100, renderer);
-            plot_datac(audiodata.fft_outdata, 3*SCREEN_HEIGHT/4, 10, renderer);
+            perform_fft(audiodata.buffer, fftdata);
+
+            plot_dataf(audiodata.buffer, 1*SCREEN_HEIGHT/4, 100, renderer);
+            plot_datad(fftdata.indata, 2*SCREEN_HEIGHT/4, 100, renderer);
+            plot_datac(fftdata.outdata, 3*SCREEN_HEIGHT/4, 10, renderer);
 
             // search for maximum base frequency index
             int max_freq_i = 0 ;
             double max_amplitude = 0.0 ;
-            for (int i = 1; i < audiodata.fft_outsize; i++) {
-               double rep = audiodata.fft_outdata[i][0];
-               double imp = audiodata.fft_outdata[i][1];
+            for (int i = 1; i < fftdata.outsize; i++) {
+               double rep = fftdata.outdata[i][0];
+               double imp = fftdata.outdata[i][1];
                double tmp_amplitude = rep*rep + imp*imp;
                if (tmp_amplitude > max_amplitude) {
                   max_amplitude = tmp_amplitude;
                   max_freq_i = i;
                }
             }
-double dt = 1.0/(audiodata.audiodevice.freq);
-printf("Frequency: %f\n", 0.5*max_freq_i/(audiodata.fft_outsize*dt));
+printf("Frequency: %f\n", fftdata.freqs[max_freq_i]);
 fflush(stdout);
 
             SDL_RenderPresent(renderer);

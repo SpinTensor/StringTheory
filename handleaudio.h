@@ -2,40 +2,25 @@
 #define HANDLEAUDIO_H
 
 #include <SDL2/SDL.h>
-#include "fftw3.h"
 
 typedef struct {
    // buffer size for audio input
    int buffsize;
    // buffer for audio input
-   float* audiobuffer;
+   float* buffer;
    //
    // SDL audio device information
    SDL_AudioSpec wanteddev;
    SDL_AudioSpec audiodevice;
    SDL_AudioDeviceID devid_in;
    //
-   // size of fouriertransform arrays
-   // fft_insize is 2*buffsize due to zero-padding
-   int fft_insize;
-   // input data for the fft
-   double* fft_indata;
-   // fft_outsize is buffsize because one element ist of complex type
-   int fft_outsize;
-   // outputdata for the fft
-   fftw_complex* fft_outdata;
-   double* freqs;
-   // fourier transformation plan
-   fftw_plan fftw_plan;
-} audio_t;
+} audio_IO_t;
 
 
-audio_t init_audio(int requests_per_second);
+audio_IO_t init_audio(int requests_per_second);
 
-void get_audio_data(audio_t audiodata);
+void get_audio_data(audio_IO_t audiodata);
 
-void free_audio(audio_t* audiodata);
-
-
+void free_audio(audio_IO_t* audiodata);
 
 #endif

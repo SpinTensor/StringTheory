@@ -10,17 +10,20 @@ LIBS = -lSDL2 -lm $(LIBFFTW)
 
 all: AudioRecording.x
 
-AudioRecording.x: AudioRecording.o handleaudio.o mp_constants.o
+AudioRecording.x: AudioRecording.o handleaudio.o fft.o mp_constants.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
 
-AudioRecording.o: AudioRecording.c handleaudio.h
+AudioRecording.o: AudioRecording.c handleaudio.h fft.h
 	$(CC) $(CCFLAGS) $(INCFFTW) -c $<
 
-handleaudio.o: handleaudio.c mp_constants.h
+handleaudio.o: handleaudio.c
+	$(CC) $(CCFLAGS) -c $<
+
+fft.o: fft.c mp_constants.h
 	$(CC) $(CCFLAGS) $(INCFFTW) -c $<
 
 mp_constants.o: mp_constants.c
-	$(CC) $(CCFLAGS) $(INCFFTW) -c $<
+	$(CC) $(CCFLAGS) -c $<
 
 .PHONY: clean veryclean
 
