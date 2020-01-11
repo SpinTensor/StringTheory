@@ -10,13 +10,13 @@ LIBS = -lSDL2 -lm $(LIBFFTW)
 
 all: AudioRecording.x
 
-AudioRecording.x: AudioRecording.o handleaudio.o fft.o window_functions.o mp_constants.o
+AudioRecording.x: AudioRecording.o audio_IO.o fft.o window_functions.o mp_constants.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
 
-AudioRecording.o: AudioRecording.c handleaudio.h fft.h
+AudioRecording.o: AudioRecording.c audio_IO.h fft.h
 	$(CC) $(CCFLAGS) $(INCFFTW) -c $<
 
-handleaudio.o: handleaudio.c
+audio_IO.o: audio_IO.c
 	$(CC) $(CCFLAGS) -c $<
 
 fft.o: fft.c window_functions.h

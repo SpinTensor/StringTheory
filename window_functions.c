@@ -19,7 +19,7 @@ double hann_window(int width, double x) {
 }
 
 double sine_window(int width, double x) {
-   double scale= 0.5*twopi/((double)width);
+   double scale= pi/((double)width);
    return sin(x*scale);
 }
 

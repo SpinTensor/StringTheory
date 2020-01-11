@@ -4,12 +4,12 @@
 
 #include <math.h>
 
-#include "handleaudio.h"
+#include "audio_IO.h"
 #include "fft.h"
 
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 768
-#define FPS 10
+#define FPS 8
 
 const unsigned int mspf = 1000/FPS;
 
@@ -60,7 +60,7 @@ int main(){
                   max_freq_i = i;
                }
             }
-printf("Frequency: %f\n", fftdata.freqs[max_freq_i]);
+//printf("Frequency: %f %f\n", fftdata.freqs[max_freq_i], estimate_freq(fftdata));
 fflush(stdout);
 
             SDL_RenderPresent(renderer);

@@ -45,7 +45,8 @@ fft_t init_fft(int fft_size, double dt) {
 void perform_fft(float* indata, fft_t fftdata) {
    // filter and fourier transform data
    for (int i=0; i<fftdata.rawsize; i++){
-      fftdata.indata[i] = hann_window(fftdata.rawsize, (double) i) * indata[i];
+      fftdata.indata[i] = nuttall_window(fftdata.rawsize, (double) i) * indata[i];
+      //fftdata.indata[i] = hann_window(fftdata.rawsize, (double) i) * indata[i];
    }
 
    fftw_execute(fftdata.plan);

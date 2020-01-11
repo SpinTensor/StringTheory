@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 
-#include "handleaudio.h"
+#include "audio_IO.h"
 
 audio_IO_t init_audio(int requests_per_second){
    audio_IO_t audiodata;
