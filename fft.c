@@ -1,8 +1,7 @@
 #include <stdlib.h>
-#include <math.h>
 
-#include "mp_constants.h"
 #include "fft.h"
+#include "window_functions.h"
 
 fft_t init_fft(int fft_size, double dt) {
 
@@ -45,15 +44,8 @@ fft_t init_fft(int fft_size, double dt) {
 
 void perform_fft(float* indata, fft_t fftdata) {
    // filter and fourier transform data
-   double scale = twopi/((double)(fftdata.rawsize));
    for (int i=0; i<fftdata.rawsize; i++){
-      // apply a han-filter window
-      double w;
-      // Han-Window
-      w = 0.5 - 0.5*cos(scale*(double)i);
-      // Sine-Window
-      // w = sin(0.5*s*i);
-      fftdata.indata[i] = w * indata[i];
+      fftdata.indata[i] = hann_window(fftdata.rawsize, (double) i) * indata[i];
    }
 
    fftw_execute(fftdata.plan);
