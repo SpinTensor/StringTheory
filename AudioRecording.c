@@ -14,9 +14,9 @@
 
 const unsigned int mspf = 1000/FPS;
 
-void plot_dataf(float* data, int offset, int scale, SDL_Renderer* renderer);
-void plot_datad(double* data, int offset, int scale, SDL_Renderer* renderer);
-void plot_datac(fftw_complex* data, int offset, int scale, SDL_Renderer* renderer);
+void plot_dataf(int ndata,float* data, int offset, int scale, SDL_Renderer* renderer);
+void plot_datad(int ndata,double* data, int offset, int scale, SDL_Renderer* renderer);
+void plot_datac(int ndata,fftw_complex* data, int offset, int scale, SDL_Renderer* renderer);
 
 int main(){
 
@@ -45,9 +45,9 @@ int main(){
             get_audio_data(audiodata);
             perform_fft(audiodata.buffer, fftdata);
 
-            plot_dataf(audiodata.buffer, 1*SCREEN_HEIGHT/4, 100, renderer);
-            plot_datad(fftdata.indata, 2*SCREEN_HEIGHT/4, 100, renderer);
-            plot_datac(fftdata.outdata, 3*SCREEN_HEIGHT/4, 10, renderer);
+            plot_dataf(audiodata.buffsize, audiodata.buffer, 1*SCREEN_HEIGHT/4, 100, renderer);
+            plot_datad(fftdata.rawsize, fftdata.indata, 2*SCREEN_HEIGHT/4, 100, renderer);
+            plot_datac(fftdata.outsize, fftdata.outdata, 3*SCREEN_HEIGHT/4, 10, renderer);
 
             // search for maximum base frequency index
             int max_freq_i = 0 ;
@@ -94,42 +94,42 @@ fflush(stdout);
    
 }
 
-void plot_dataf(float* data, int offset, int scale, SDL_Renderer* renderer){
+void plot_dataf(int ndata, float* data, int offset, int scale, SDL_Renderer* renderer){
    SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
    int yold = ((int) (data[0]*scale));
    //int yold = 100;
-   for (int i=1; i<SCREEN_WIDTH; i++){
+   for (int i=1; i<ndata; i++){
       int ynew = ((int) (data[i]*scale));
       //int ynew = -yold;
-      SDL_RenderDrawLine(renderer, i-1, offset-yold, i, offset-ynew);
+      SDL_RenderDrawLine(renderer, ((i-1)*SCREEN_WIDTH)/(ndata-1), offset-yold, (i*SCREEN_WIDTH)/(ndata-1), offset-ynew);
       yold = ynew;
    }
    return;
 }
 
-void plot_datad(double* data, int offset, int scale, SDL_Renderer* renderer){
+void plot_datad(int ndata, double* data, int offset, int scale, SDL_Renderer* renderer){
    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
    int yold = ((int) (data[0]*scale));
    //int yold = 100;
-   for (int i=1; i<SCREEN_WIDTH; i++){
+   for (int i=1; i<ndata; i++){
       int ynew = ((int) (data[i]*scale));
       //int ynew = -yold;
-      SDL_RenderDrawLine(renderer, i-1, offset-yold, i, offset-ynew);
+      SDL_RenderDrawLine(renderer, ((i-1)*SCREEN_WIDTH)/(ndata-1), offset-yold, (i*SCREEN_WIDTH)/(ndata-1), offset-ynew);
       yold = ynew;
    }
    return;
 }
 
-void plot_datac(fftw_complex* data, int offset, int scale, SDL_Renderer* renderer){
+void plot_datac(int ndata, fftw_complex* data, int offset, int scale, SDL_Renderer* renderer){
    SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
    double rep = data[0][0];
    double imp = data[0][1];
    int yold = ((int) (sqrt(rep*rep+imp*imp)*scale));
-   for (int i=1; i<SCREEN_WIDTH/2; i++){
+   for (int i=1; i<ndata; i++){
       rep = data[i][0];
       imp = data[i][1];
       int ynew = ((int) (sqrt(rep*rep+imp*imp)*scale));
-      SDL_RenderDrawLine(renderer, 2*(i-1), offset-yold, 2*i, offset-ynew);
+      SDL_RenderDrawLine(renderer, ((i-1)*SCREEN_WIDTH)/(ndata-1), offset-yold, (i*SCREEN_WIDTH)/(ndata-1), offset-ynew);
       yold = ynew;
    }
    return;
