@@ -6,9 +6,22 @@ INCFFTW = -I$$HOME/include/
 LIBFFTW = -Wl,-Bstatic -L$$HOME/lib/ -lfftw3 -Wl,-Bdynamic -lpthread
 LIBFFTW = -L$$HOME/lib/ -lfftw3
 
-LIBS = -lSDL2 -lm $(LIBFFTW)
+INCSDL = 
+LIBSDL = -lSDL2
 
-all: AudioRecording.x
+INCGTK = `pkg-config --cflags gtk+-3.0`
+LIBGTK = `pkg-config --libs gtk+-3.0` -export-dynamic
+
+INCFLAGS = $(INCFFTW) $(INCSDL) $(INCGTK)
+LIBS = -lm $(LIBFFTW) $(LIBSDL) $(LIBGTK) -export-dynamic
+
+all: AudioRecording.x StringTheory.x
+
+StringTheory.x: StringTheory.o
+	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
+
+StringTheory.o: StringTheory.c StringTheory.glade
+	$(CC) $(CCFLAGS) $(INCFLAGS) -c $<
 
 AudioRecording.x: AudioRecording.o audio_IO.o freq_estimator.o fft.o window_functions.o mp_constants.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
