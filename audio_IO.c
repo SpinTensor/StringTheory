@@ -8,7 +8,7 @@ audio_IO_t init_audio(int requests_per_second){
 
    // wanted audio input devide specifications
    SDL_zero(audiodata.wanteddev);
-   audiodata.wanteddev.freq = 48000;                 // samples per second
+   audiodata.wanteddev.freq = 44000;                 // samples per second
    audiodata.wanteddev.format = AUDIO_F32;           // audio_format is float
    audiodata.wanteddev.channels = 1;                 // number of channels
    audiodata.wanteddev.samples = audiodata.buffsize; // buffersize to write in

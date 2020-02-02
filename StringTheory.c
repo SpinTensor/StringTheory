@@ -1,12 +1,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <math.h>
 
 // Audio IO handling via SDL2
 #include <SDL2/SDL.h>
 
 // GUI via GTK
 #include <gtk/gtk.h>
+
+#include "audio_IO.h"
+#include "fft.h"
+#include "freq_estimator.h"
 
 // Global Window
 GtkWidget *window;
@@ -29,20 +34,30 @@ GtkWidget *GlobalFixed;
 
 GtkBuilder *builder;
 
-// remove later
-gboolean timer_handler();
-#define N 128
-int arr[N];
+// declaration for the function that updates all audio data
+gboolean update_audio_data();
+// Global declaration of all data 
+// TODO: figure out how to make this local
+audio_IO_t audiodata;
+fft_t fftdata;
+double result_freq;
 
+// Main function
 int main(int argc, char **argv) {
+
+   // samples per second
+   int sps = 8;
 
    // init SDL and Audio handling
    if (SDL_Init(SDL_INIT_AUDIO)) {
       fprintf(stderr, "Failed to initialize SDL\n");
       return -1;
    }
+   audiodata = init_audio(sps);
+   fftdata = init_fft(audiodata.buffsize, 1.0/(audiodata.audiodevice.freq));
+   printf("%d %lf\n", fftdata.outsize, fftdata.freqs[fftdata.outsize-1]);
 
-   // initialize GTK
+   // initialize GTK for GUI handling
    gtk_init(&argc, &argv);
 
    // parse glade file to build gtk-gui
@@ -80,10 +95,14 @@ int main(int argc, char **argv) {
    gtk_widget_show(window);
 
    // functions to be called repeatedly throughout runtime
-   g_timeout_add(125, (GSourceFunc) timer_handler, arr);
+   g_timeout_add(1000/sps, (GSourceFunc) update_audio_data, NULL);
 
    // Run GTK-Gui
    gtk_main();
+
+   // free audio data
+   free_audio(&audiodata);
+   free_fft(&fftdata);
 
    // Finalize SDL 
    SDL_Quit();
@@ -91,31 +110,77 @@ int main(int argc, char **argv) {
    return 0;
 }
 
-gboolean timer_handler() {
-   //dummy plotting function
-   for (int i=0; i<N; i++) {
-      arr[i] = rand();
-   }
-   gtk_widget_queue_draw(SignalPlottingArea);
+gboolean update_audio_data(){
+   // get audio data 
+   get_audio_data(audiodata);
+   // perform fourier transformation
+   perform_fft(audiodata.buffer, fftdata);
+   // estimate the most prominent frequency
+   result_freq = estimate_freq(fftdata);
 
+   // initiate plotting of data
+   gtk_widget_queue_draw(SignalPlottingArea);
    return true;
 }
 
 gboolean on_SignalPlottingArea_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
-   guint width, height;
+   // plot audio signal and frequency data
 
+   // height and width of the drawing area
+   guint width, height;
    width = gtk_widget_get_allocated_width(widget);
    height = gtk_widget_get_allocated_height(widget);
 
+   // set drawing line width
    cairo_set_line_width(cr, 1.0);
+   // TODO: draw coordinate system
 
-   for (int i=0; i<N-1; i++) {
+   int ndata = 0;
+   double xold, xnew;
+   double yold, ynew;
+   double offset;
+   double scale;
+
+   // plot raw audio data
+   ndata = audiodata.buffsize/5;
+   scale = 1000.0;
+   offset = (1.0-0.75) * height;
+   xold = 0.0;
+   yold = offset - scale*audiodata.buffer[0];
+   cairo_set_source_rgb(cr, 1.0, 0.0, 0.0); //color red
+   for (int i=1; i<ndata; i++) {
+      cairo_move_to(cr, xold, yold);
       double di = (double) i;
-      cairo_set_source_rgb(cr, 1.0, 0.0, 0.0); //color red
-      cairo_move_to(cr, (di/N*width), height-(arr[i]%height));
-      di = (double) i+1;
-      cairo_line_to(cr, (di/N*width), height-(arr[i+1]%height));
+      xnew = (di*width)/(ndata-1);
+      ynew = offset - scale*audiodata.buffer[i];
+      cairo_line_to(cr, xnew, ynew);
       cairo_stroke(cr);
+      xold = xnew;
+      yold = ynew;
+   }
+
+   // plot fourier transformed audio data (frequencies)
+   ndata = fftdata.outsize/5;
+   double rep = fftdata.outdata[0][0];
+   double imp = fftdata.outdata[0][1];
+   double amp = sqrt(rep*rep+imp*imp);
+   scale = 20.0;
+   offset = (1.0-0.1) * height;
+   xold = 0.0;
+   yold = offset - scale*amp;
+   cairo_set_source_rgb(cr, 0.0, 1.0, 0.0); //color red
+   for (int i=1; i<ndata; i++) {
+      cairo_move_to(cr, xold, yold);
+      rep = fftdata.outdata[i][0];
+      imp = fftdata.outdata[i][1];
+      amp = sqrt(rep*rep+imp*imp);
+      double di = (double) i;
+      xnew = (di*width)/(ndata-1);
+      ynew = offset - scale*amp;
+      cairo_line_to(cr, xnew, ynew);
+      cairo_stroke(cr);
+      xold = xnew;
+      yold = ynew;
    }
 
    return false;
