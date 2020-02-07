@@ -20,16 +20,16 @@ all: AudioRecording.x StringTheory.x test.x
 StringTheory.x: StringTheory.o audio_IO.o freq_estimator.o fft.o window_functions.o mp_constants.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
 
-StringTheory.o: StringTheory.c audio_IO.h fft.h freq_estimator.h StringTheory.glade
+StringTheory.o: StringTheory.c audio_IO.h audio_IO_t.h fft.h freq_estimator.h StringTheory.glade
 	$(CC) $(CCFLAGS) $(INCFLAGS) -c $<
 
 AudioRecording.x: AudioRecording.o audio_IO.o freq_estimator.o fft.o window_functions.o mp_constants.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
 
-AudioRecording.o: AudioRecording.c audio_IO.h fft.h freq_estimator.h
+AudioRecording.o: AudioRecording.c audio_IO.h audio_IO_t.h fft.h freq_estimator.h
 	$(CC) $(CCFLAGS) $(INCFFTW) -c $<
 
-audio_IO.o: audio_IO.c
+audio_IO.o: audio_IO.c audio_IO_t.h
 	$(CC) $(CCFLAGS) -c $<
 
 freq_estimator.o: freq_estimator.c fft_t.h
