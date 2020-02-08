@@ -25,7 +25,7 @@ audio_IO_t init_audio(int requests_per_second){
 
    // set audio buffer size
    audiodata.buffsize = audiodata.audiodevice.freq / requests_per_second;
-   audiodata.buffer = (float*)malloc(audiodata.buffsize*sizeof(float));
+   audiodata.buffer = (float*)malloc(2*audiodata.buffsize*sizeof(float));
    // fill with zeros
    for (int i=0; i<audiodata.buffsize; i++){
       audiodata.buffer[i] = 0.0;
