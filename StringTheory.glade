@@ -2,6 +2,13 @@
 <!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <object class="GtkAdjustment" id="SetReferenceFrequencyAdj">
+    <property name="lower">430</property>
+    <property name="upper">450</property>
+    <property name="value">443</property>
+    <property name="step_increment">0.5</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkWindow" id="window">
     <property name="width_request">1024</property>
     <property name="height_request">768</property>
@@ -28,6 +35,43 @@
               <object class="GtkFixed" id="ControlPanel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkSpinButton" id="SetRefFrequency">
+                    <property name="width_request">128</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="max_length">5</property>
+                    <property name="text" translatable="yes">443.0</property>
+                    <property name="xalign">1</property>
+                    <property name="progress_pulse_step">0.5</property>
+                    <property name="primary_icon_tooltip_text" translatable="yes">Enter the reference tone in Herz</property>
+                    <property name="input_purpose">number</property>
+                    <property name="adjustment">SetReferenceFrequencyAdj</property>
+                    <property name="climb_rate">0.10000000000000001</property>
+                    <property name="digits">1</property>
+                    <property name="snap_to_ticks">True</property>
+                    <property name="numeric">True</property>
+                    <property name="value">443</property>
+                    <signal name="value-changed" handler="on_SetRefFrequency_value_changed" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="x">43</property>
+                    <property name="y">50</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="TstLabel">
+                    <property name="width_request">100</property>
+                    <property name="height_request">80</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">label</property>
+                  </object>
+                  <packing>
+                    <property name="x">62</property>
+                    <property name="y">241</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="resize">False</property>

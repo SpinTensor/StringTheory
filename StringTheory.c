@@ -21,6 +21,8 @@ GtkWidget *GlobalFixed;
   GtkWidget *VerticalPaned;
     // Left Side Panel
     GtkWidget *ControlPanel;
+    GtkWidget *SetRefFrequency;
+    GtkWidget *TstLabel;
 
     // Horizontal Splitting
     GtkWidget *HorizontalPaned;
@@ -73,6 +75,9 @@ int main(int argc, char **argv) {
      VerticalPaned = GTK_WIDGET(gtk_builder_get_object(builder, "VerticalPaned"));
        // Create left side panel a.k.a. control panel (Left
        ControlPanel = GTK_WIDGET(gtk_builder_get_object(builder, "ControlPanel"));
+       // Set the reference tone frequency
+       SetRefFrequency = GTK_WIDGET(gtk_builder_get_object(builder, "SetRefFrequency"));
+       TstLabel = GTK_WIDGET(gtk_builder_get_object(builder, "TstLabel"));
        // TODO: Rest
        
        // Split right side of vertical split horizontally
@@ -130,6 +135,16 @@ gboolean update_audio_data(){
    gtk_widget_queue_draw(SignalPlottingArea);
 
    return true;
+}
+
+void on_SetRefFrequency_value_changed(GtkSpinButton *sp) {
+
+   double selected_freq = gtk_spin_button_get_value(sp);
+   char freqstr[10];
+   sprintf(freqstr, "%5.1lf Hz", selected_freq);
+   gtk_label_set_text(GTK_LABEL(TstLabel), freqstr);
+
+   return;
 }
 
 gboolean on_SignalPlottingArea_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
