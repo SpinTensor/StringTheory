@@ -61,7 +61,7 @@ int main(){
                   max_freq_i = i;
                }
             }
-printf("Frequency: %f %f\n", fftdata.freqs[max_freq_i], estimate_freq(fftdata));
+printf("Frequency: %f %f\n", fftdata.freqs[max_freq_i], estimate_freq(fftdata, 1.0));
 fflush(stdout);
 
             SDL_RenderPresent(renderer);

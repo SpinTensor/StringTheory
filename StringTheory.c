@@ -26,6 +26,8 @@ GtkWidget *GlobalFixed;
     GtkWidget *HorizontalPaned;
       // Main Panel
       GtkWidget *MainPanel;
+      // Frequency
+      GtkWidget *DisplayFrequency;
 
       // Bottom Panel
       GtkWidget *BottomPanel;
@@ -46,7 +48,7 @@ double result_freq;
 int main(int argc, char **argv) {
 
    // samples per second
-   int sps = 8;
+   const int sps = 8;
 
    // init SDL and Audio handling
    if (SDL_Init(SDL_INIT_AUDIO)) {
@@ -55,7 +57,6 @@ int main(int argc, char **argv) {
    }
    audiodata = init_audio(sps);
    fftdata = init_fft(audiodata.buffsize, 1.0/(audiodata.audiodevice.freq));
-   printf("%d %lf\n", fftdata.outsize, fftdata.freqs[fftdata.outsize-1]);
 
    // initialize GTK for GUI handling
    gtk_init(&argc, &argv);
@@ -78,7 +79,10 @@ int main(int argc, char **argv) {
        HorizontalPaned = GTK_WIDGET(gtk_builder_get_object(builder, "HorizontalPaned"));
          // Create Main Panel (Top)
          MainPanel = GTK_WIDGET(gtk_builder_get_object(builder, "MainPanel"));
+         // Display frequency
+         DisplayFrequency = GTK_WIDGET(gtk_builder_get_object(builder, "DisplayFrequency"));
          // TODO: Rest
+
 
          // Create Bottom Panel (Bottom)
          BottomPanel = GTK_WIDGET(gtk_builder_get_object(builder, "BottomPanel"));
@@ -116,10 +120,15 @@ gboolean update_audio_data(){
    // perform fourier transformation
    perform_fft(audiodata.buffer, fftdata);
    // estimate the most prominent frequency
-   result_freq = estimate_freq(fftdata);
+   result_freq = estimate_freq(fftdata, 1.0);
+   // Display the frequency in the main window label
+   char freqstr[10];
+   sprintf(freqstr, "%5.1lf Hz", result_freq);
+   gtk_label_set_text(GTK_LABEL(DisplayFrequency), freqstr);
 
    // initiate plotting of data
    gtk_widget_queue_draw(SignalPlottingArea);
+
    return true;
 }
 

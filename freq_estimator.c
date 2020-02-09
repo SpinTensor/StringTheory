@@ -1,6 +1,6 @@
 #include "fft_t.h"
 
-double estimate_freq(fft_t fftdata) {
+double estimate_freq(fft_t fftdata, double cutoff) {
    // search for maximum base frequency index
    int max_ampl_i = 0 ;
    double max_amplitude = 0.0 ;
@@ -13,7 +13,7 @@ double estimate_freq(fft_t fftdata) {
          max_ampl_i = i;
       }
    }
-   if (max_ampl_i == 0) {return 0.0;}
+   if (max_ampl_i == 0 || max_amplitude < cutoff) {return 0.0;}
    // compute the center of amplitude like a "center of mass"
    // the amplitude square is the mass
    double y = max_amplitude;
