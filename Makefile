@@ -17,10 +17,10 @@ LIBS = -lm $(LIBFFTW) $(LIBSDL) $(LIBGTK) -export-dynamic
 
 all: AudioRecording.x StringTheory.x test.x
 
-StringTheory.x: StringTheory.o audio_IO.o freq_estimator.o fft.o window_functions.o mp_constants.o
+StringTheory.x: StringTheory.o audio_IO.o freq_estimator.o fft.o window_functions.o mp_constants.o notes.o note_names.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
 
-StringTheory.o: StringTheory.c audio_IO.h audio_IO_t.h fft.h freq_estimator.h StringTheory.glade
+StringTheory.o: StringTheory.c audio_IO.h audio_IO_t.h fft.h freq_estimator.h notes.h StringTheory.glade
 	$(CC) $(CCFLAGS) $(INCFLAGS) -c $<
 
 AudioRecording.x: AudioRecording.o audio_IO.o freq_estimator.o fft.o window_functions.o mp_constants.o

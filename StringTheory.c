@@ -12,6 +12,7 @@
 #include "audio_IO.h"
 #include "fft.h"
 #include "freq_estimator.h"
+#include "notes.h"
 
 // Global Window
 GtkWidget *window;
@@ -30,6 +31,8 @@ GtkWidget *GlobalFixed;
       GtkWidget *MainPanel;
       // Frequency
       GtkWidget *DisplayFrequency;
+      // Note Name
+      GtkWidget *DisplayNoteName;
 
       // Bottom Panel
       GtkWidget *BottomPanel;
@@ -40,11 +43,16 @@ GtkBuilder *builder;
 
 // declaration for the function that updates all audio data
 gboolean update_audio_data();
+// function that updates note values
+void update_notes(double freq);
+// find the note most closely resembling the frequency
+int find_closest_note_index(double freq);
 // Global declaration of all data 
 // TODO: figure out how to make this local
 audio_IO_t audiodata;
 fft_t fftdata;
 double result_freq;
+note_t notes[100];
 
 // Main function
 int main(int argc, char **argv) {
@@ -86,6 +94,8 @@ int main(int argc, char **argv) {
          MainPanel = GTK_WIDGET(gtk_builder_get_object(builder, "MainPanel"));
          // Display frequency
          DisplayFrequency = GTK_WIDGET(gtk_builder_get_object(builder, "DisplayFrequency"));
+         // Display note name
+         DisplayNoteName = GTK_WIDGET(gtk_builder_get_object(builder, "DisplayNoteName"));
          // TODO: Rest
 
 
@@ -105,6 +115,10 @@ int main(int argc, char **argv) {
 
    // functions to be called repeatedly throughout runtime
    g_timeout_add(1000/sps, (GSourceFunc) update_audio_data, NULL);
+
+   // Remaining initializations for gui connected things
+   // Initialize note frequencies
+   update_notes(gtk_spin_button_get_value(GTK_SPIN_BUTTON(SetRefFrequency)));
 
    // Run GTK-Gui
    gtk_main();
@@ -133,6 +147,13 @@ gboolean update_audio_data(){
 
    // initiate plotting of data
    gtk_widget_queue_draw(SignalPlottingArea);
+   int noteidx = find_closest_note_index(result_freq);
+printf("%f -> %d\n", result_freq, noteidx);
+   if (noteidx == -1) {
+      gtk_label_set_text(GTK_LABEL(DisplayNoteName), "");
+   } else {
+      gtk_label_set_text(GTK_LABEL(DisplayNoteName), notes[noteidx].name);
+   }
 
    return true;
 }
@@ -144,8 +165,39 @@ void on_SetRefFrequency_value_changed(GtkSpinButton *sp) {
    sprintf(freqstr, "%5.1lf Hz", selected_freq);
    gtk_label_set_text(GTK_LABEL(TstLabel), freqstr);
 
+   update_notes(selected_freq);
+
    return;
 }
+
+void update_notes(double freq) {
+   //Update all notes
+   notes[0] = reference_Note(freq, just);
+   while (notes[0].octave >= 0) {
+      notes[0] = prev_note(notes[0]);
+   }
+   for (int i=1; i<100; i++) {
+      notes[i] = next_note(notes[i-1]);
+   }
+   print_note(notes[50]);
+   return;
+}
+
+int find_closest_note_index(double freq) {
+   printf("%f %f %f\n", notes[0].freq, freq, notes[100-1].freq);
+   if (freq < notes[0].freq || notes[100-1].freq < freq) {
+      return -1;
+   }
+
+   for (int idx=1; idx<100; idx++) {
+      if (freq < notes[idx].freq) {
+         return idx-1;
+      }
+   }
+   
+   return -1;
+}
+
 
 gboolean on_SignalPlottingArea_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
    // plot audio signal and frequency data
