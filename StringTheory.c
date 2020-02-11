@@ -147,8 +147,9 @@ gboolean update_audio_data(){
 
    // initiate plotting of data
    gtk_widget_queue_draw(SignalPlottingArea);
+
+   // update note name label
    int noteidx = find_closest_note_index(result_freq);
-printf("%f -> %d\n", result_freq, noteidx);
    if (noteidx == -1) {
       gtk_label_set_text(GTK_LABEL(DisplayNoteName), "");
    } else {
@@ -184,7 +185,6 @@ void update_notes(double freq) {
 }
 
 int find_closest_note_index(double freq) {
-   printf("%f %f %f\n", notes[0].freq, freq, notes[100-1].freq);
    if (freq < notes[0].freq || notes[100-1].freq < freq) {
       return -1;
    }
