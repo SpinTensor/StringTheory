@@ -150,9 +150,7 @@ gboolean update_audio_data(){
 
    // update note name label
    int noteidx = find_closest_note_index(result_freq);
-   if (noteidx == -1) {
-      gtk_label_set_text(GTK_LABEL(DisplayNoteName), "");
-   } else {
+   if (noteidx != -1) {
       gtk_label_set_text(GTK_LABEL(DisplayNoteName), notes[noteidx].name);
    }
 
