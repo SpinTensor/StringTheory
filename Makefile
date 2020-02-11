@@ -15,7 +15,7 @@ LIBGTK = $$(pkg-config --libs gtk+-3.0) -export-dynamic
 INCFLAGS = $(INCFFTW) $(INCSDL) $(INCGTK)
 LIBS = -lm $(LIBFFTW) $(LIBSDL) $(LIBGTK) -export-dynamic
 
-all: AudioRecording.x StringTheory.x test.x
+all: AudioRecording.x StringTheory.x
 
 StringTheory.x: StringTheory.o audio_IO.o freq_estimator.o fft.o window_functions.o mp_constants.o notes.o note_names.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
@@ -43,12 +43,6 @@ window_functions.o: window_functions.c mp_constants.h
 
 mp_constants.o: mp_constants.c
 	$(CC) $(CCFLAGS) -c $<
-
-test.x: test.o notes.o note_names.o
-	$(CC) $(CFLAGS) -o $@ $^ -lm
-
-test.o: test.c notes.h
-	$(CC) $(CFLAGS) -c $<
 
 notes.o: notes.c note_names.h equal_tempered_ratios.h just_tempered_ratios.h
 	$(CC) $(CFLAGS) -c $<
