@@ -180,7 +180,6 @@ void update_notes(double freq) {
    for (int i=1; i<100; i++) {
       notes[i] = next_note(notes[i-1]);
    }
-   print_note(notes[50]);
    return;
 }
 
