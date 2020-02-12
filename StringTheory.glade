@@ -9,6 +9,20 @@
     <property name="step_increment">0.5</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkListStore" id="TuningSystemList">
+    <columns>
+      <!-- column-name TuningSystem -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Just</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Equal</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkWindow" id="window">
     <property name="width_request">1024</property>
     <property name="height_request">768</property>
@@ -70,6 +84,30 @@
                   <packing>
                     <property name="x">62</property>
                     <property name="y">241</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBox" id="SetTuningSystem">
+                    <property name="width_request">128</property>
+                    <property name="height_request">34</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="model">TuningSystemList</property>
+                    <property name="has_entry">True</property>
+                    <property name="entry_text_column">0</property>
+                    <signal name="changed" handler="on_SetTuningSystem_changed" swapped="no"/>
+                    <child internal-child="entry">
+                      <object class="GtkEntry" id="TuningSystemEntry">
+                        <property name="can_focus">False</property>
+                        <property name="max_width_chars">10</property>
+                        <property name="text" translatable="yes">Just</property>
+                        <signal name="changed" handler="on_TuningSystemEntry_changed" swapped="no"/>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="x">43</property>
+                    <property name="y">17</property>
                   </packing>
                 </child>
               </object>

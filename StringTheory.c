@@ -23,6 +23,8 @@ GtkWidget *GlobalFixed;
     // Left Side Panel
     GtkWidget *ControlPanel;
     GtkWidget *SetRefFrequency;
+    GtkWidget *SetTuningSystem;
+    GtkWidget *TuningSystemEntry;
     GtkWidget *TstLabel;
 
     // Horizontal Splitting
@@ -44,7 +46,7 @@ GtkBuilder *builder;
 // declaration for the function that updates all audio data
 gboolean update_audio_data();
 // function that updates note values
-void update_notes(double freq);
+void update_notes(double freq, int tuning_system);
 // find the note most closely resembling the frequency
 int find_closest_note_index(double freq);
 // Global declaration of all data 
@@ -85,6 +87,9 @@ int main(int argc, char **argv) {
        ControlPanel = GTK_WIDGET(gtk_builder_get_object(builder, "ControlPanel"));
        // Set the reference tone frequency
        SetRefFrequency = GTK_WIDGET(gtk_builder_get_object(builder, "SetRefFrequency"));
+       // Set the tuning system to be used
+       SetTuningSystem = GTK_WIDGET(gtk_builder_get_object(builder, "SetTuningSystem"));
+       TuningSystemEntry = GTK_WIDGET(gtk_builder_get_object(builder, "TuningSystemEntry"));
        TstLabel = GTK_WIDGET(gtk_builder_get_object(builder, "TstLabel"));
        // TODO: Rest
        
@@ -118,7 +123,9 @@ int main(int argc, char **argv) {
 
    // Remaining initializations for gui connected things
    // Initialize note frequencies
-   update_notes(gtk_spin_button_get_value(GTK_SPIN_BUTTON(SetRefFrequency)));
+   gtk_combo_box_set_active(GTK_COMBO_BOX(SetTuningSystem), 0);
+   update_notes(gtk_spin_button_get_value(GTK_SPIN_BUTTON(SetRefFrequency)),
+                gtk_combo_box_get_active(GTK_COMBO_BOX(SetTuningSystem)));
 
    // Run GTK-Gui
    gtk_main();
@@ -140,10 +147,6 @@ gboolean update_audio_data(){
    perform_fft(audiodata.buffer, fftdata);
    // estimate the most prominent frequency
    result_freq = estimate_freq(fftdata, 1.0);
-   // Display the frequency in the main window label
-   char freqstr[10];
-   sprintf(freqstr, "%5.1lf Hz", result_freq);
-   gtk_label_set_text(GTK_LABEL(DisplayFrequency), freqstr);
 
    // initiate plotting of data
    gtk_widget_queue_draw(SignalPlottingArea);
@@ -151,6 +154,11 @@ gboolean update_audio_data(){
    // update note name label
    int noteidx = find_closest_note_index(result_freq);
    if (noteidx != -1) {
+      // Display the frequency in the main window label
+      char freqstr[10];
+      sprintf(freqstr, "%5.1lf Hz", result_freq);
+      gtk_label_set_text(GTK_LABEL(DisplayFrequency), freqstr);
+      // Display note name
       gtk_label_set_text(GTK_LABEL(DisplayNoteName), notes[noteidx].name);
    }
 
@@ -159,19 +167,35 @@ gboolean update_audio_data(){
 
 void on_SetRefFrequency_value_changed(GtkSpinButton *sp) {
 
-   double selected_freq = gtk_spin_button_get_value(sp);
+   int tuning_system = gtk_combo_box_get_active(GTK_COMBO_BOX(SetTuningSystem));
+   double selected_freq = gtk_spin_button_get_value(GTK_SPIN_BUTTON(SetRefFrequency));
    char freqstr[10];
    sprintf(freqstr, "%5.1lf Hz", selected_freq);
-   gtk_label_set_text(GTK_LABEL(TstLabel), freqstr);
+   //gtk_label_set_text(GTK_LABEL(TstLabel), freqstr);
 
-   update_notes(selected_freq);
+   update_notes(selected_freq, tuning_system);
 
    return;
 }
 
-void update_notes(double freq) {
+void on_SetTuningSystem_changed(GtkComboBox *cb) {
+   int tuning_system = gtk_combo_box_get_active(GTK_COMBO_BOX(SetTuningSystem));
+   double selected_freq = gtk_spin_button_get_value(GTK_SPIN_BUTTON(SetRefFrequency));
+
+   update_notes(selected_freq, tuning_system);
+
+   return;
+}
+
+void on_TuningSystemEntry_changed(GtkEntry *e) {
+   gtk_label_set_text(GTK_LABEL(TstLabel), gtk_entry_get_text(e));
+   return;
+}
+   
+
+void update_notes(double freq, int tuning_system) {
    //Update all notes
-   notes[0] = reference_Note(freq, just);
+   notes[0] = reference_Note(freq, tuning_system);
    while (notes[0].octave >= 0) {
       notes[0] = prev_note(notes[0]);
    }
@@ -186,10 +210,19 @@ int find_closest_note_index(double freq) {
       return -1;
    }
 
-   for (int idx=1; idx<100; idx++) {
+   int idx;
+   for (idx=1; idx<100; idx++) {
       if (freq < notes[idx].freq) {
-         return idx-1;
+         break;
       }
+   }
+
+   double delta_low = freq - notes[idx-1].freq;
+   double delta_high = notes[idx].freq - freq;
+   if (delta_low < delta_high) {
+      return idx-1;
+   } else {
+      return idx;
    }
    
    return -1;
