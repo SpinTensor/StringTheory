@@ -15,7 +15,7 @@ LIBGTK = $$(pkg-config --libs gtk+-3.0) -export-dynamic
 INCFLAGS = $(INCFFTW) $(INCSDL) $(INCGTK)
 LIBS = -lm $(LIBFFTW) $(LIBSDL) $(LIBGTK) -export-dynamic
 
-all: AudioRecording.x StringTheory.x
+all: AudioRecording.x StringTheory.x AudioVisualization.x
 
 StringTheory.x: StringTheory.o audio_IO.o freq_estimator.o fft.o window_functions.o mp_constants.o notes.o note_names.o
 	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
@@ -28,6 +28,12 @@ AudioRecording.x: AudioRecording.o audio_IO.o freq_estimator.o fft.o window_func
 
 AudioRecording.o: AudioRecording.c audio_IO.h audio_IO_t.h fft.h freq_estimator.h
 	$(CC) $(CCFLAGS) $(INCFFTW) -c $<
+
+AudioVisualization.x: AudioVisualization.o audio_IO.o fft.o window_functions.o mp_constants.o
+	$(CC) $(CCFLAGS) -o $@ $^ $(LIBS)
+
+AudioVisualization.o: AudioVisualization.c audio_IO.h audio_IO_t.h fft.h
+	$(CC) $(CCFLAGS) $(INCFLAGS) -c $<
 
 audio_IO.o: audio_IO.c audio_IO_t.h
 	$(CC) $(CCFLAGS) -c $<
