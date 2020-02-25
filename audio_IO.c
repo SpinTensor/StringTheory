@@ -5,7 +5,6 @@
 
 // Callback function to copy the updated audio input stream to the audio buffer
 void get_audio_data_callback(void *userdata, Uint8* stream, int len) {
-
    audio_IO_t audiodata = *(audio_IO_t*) userdata;
    // get number of floats to be written to the buffers end
    int nfloats = len / sizeof(float);

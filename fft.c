@@ -8,6 +8,7 @@ fft_t init_fft(int fft_size, double dt) {
    fft_t fftdata;
 
    fftdata.rawsize = fft_size;
+   fftdata.rawdata = (double*)malloc(fftdata.rawsize*sizeof(double));
 
    // Prepare fourier transform
    // is twice as big as the audio buffer due to zero padding for non periodic fft
@@ -42,10 +43,10 @@ fft_t init_fft(int fft_size, double dt) {
 
 }
 
-void perform_fft(float* indata, fft_t fftdata) {
+void perform_fft(fft_t fftdata) {
    // filter and fourier transform data
    for (int i=0; i<fftdata.rawsize; i++){
-      fftdata.indata[i] = nuttall_window(fftdata.rawsize, (double) i) * indata[i];
+      fftdata.indata[i] = nuttall_window(fftdata.rawsize, (double) i) * fftdata.rawdata[i];
    }
 
    fftw_execute(fftdata.plan);
@@ -61,6 +62,7 @@ void free_fft(fft_t* fftdata) {
    fftw_free(fftdata->outdata);
    fftdata->outsize = 0;
    fftdata->rawsize = 0;
+   free(fftdata->rawdata);
 
    return;
 }

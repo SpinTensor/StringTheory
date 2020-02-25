@@ -44,7 +44,11 @@ int main(){
             SDL_RenderClear(renderer);
 
             // Audio input stream is automatically updated by callback function
-            perform_fft(audiodata.buffer, fftdata);
+            // copy audio data to fftdata struct
+            for (int i=0; i<audiodata.buffsize; i++) {
+               fftdata.rawdata[i] = (double) audiodata.buffer[i];
+            }
+            perform_fft(fftdata);
 
             plot_dataf(audiodata.buffsize, audiodata.buffer, 1*SCREEN_HEIGHT/4, 100, renderer);
             plot_datad(fftdata.rawsize, fftdata.indata, 2*SCREEN_HEIGHT/4, 100, renderer);

@@ -10,6 +10,7 @@ typedef struct {
    // fft_insize is 2*buffsize due to zero-padding
    int insize;
    // input data for the fft
+   double* rawdata;
    double* indata;
    // fft_outsize is buffsize because one element ist of complex type
    int outsize;

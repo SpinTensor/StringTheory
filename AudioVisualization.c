@@ -90,8 +90,12 @@ int main(int argc, char **argv) {
 
 gboolean update_audio_data(){
    // Audio data is by updated via callback
+   // copy audio data to fftdata struct
+   for (int i=0; i<audiodata.buffsize; i++) {
+      fftdata.rawdata[i] = (double) audiodata.buffer[i];
+   }
    // perform fourier transformation
-   perform_fft(audiodata.buffer, fftdata);
+   perform_fft(fftdata);
 
    // initiate plotting of data
    gtk_widget_queue_draw(drawAudio);
@@ -117,19 +121,36 @@ gboolean on_drawAudio_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
    double yold, ynew;
    double offset;
    double scale;
+   scale = 8000.0;
 
    // plot raw audio data
    ndata = audiodata.buffsize;
-   scale = 1000.0;
    offset = (1.0-0.5) * height;
    xold = 0.0;
-   yold = offset - scale*audiodata.buffer[0];
+   yold = offset - scale*fftdata.rawdata[0];
    cairo_set_source_rgb(cr, 1.0, 0.0, 0.0); //color red
    for (int i=1; i<ndata; i++) {
       cairo_move_to(cr, xold, yold);
       double di = (double) i;
       xnew = (di*width)/(ndata-1);
-      ynew = offset - scale*audiodata.buffer[i];
+      ynew = offset - scale*fftdata.rawdata[i];
+      cairo_line_to(cr, xnew, ynew);
+      cairo_stroke(cr);
+      xold = xnew;
+      yold = ynew;
+   }
+
+   // plot filtered audio data
+   ndata = fftdata.rawsize;
+   offset = (1.0-0.5) * height;
+   xold = 0.0;
+   yold = offset - scale*fftdata.indata[0];
+   cairo_set_source_rgb(cr, 0.0, 0.0, 1.0); //color blue
+   for (int i=1; i<ndata; i++) {
+      cairo_move_to(cr, xold, yold);
+      double di = (double) i;
+      xnew = (di*width)/(ndata-1);
+      ynew = offset - scale*fftdata.indata[i];
       cairo_line_to(cr, xnew, ynew);
       cairo_stroke(cr);
       xold = xnew;

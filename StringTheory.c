@@ -142,7 +142,12 @@ int main(int argc, char **argv) {
 
 gboolean update_audio_data(){
    // perform fourier transformation
-   perform_fft(audiodata.buffer, fftdata);
+   // copy audio data to fftdata struct
+   for (int i=0; i<audiodata.buffsize; i++) {
+      fftdata.rawdata[i] = (double) audiodata.buffer[i];
+   }
+
+   perform_fft(fftdata);
    // estimate the most prominent frequency
    result_freq = estimate_freq(fftdata, 1.0);
 
