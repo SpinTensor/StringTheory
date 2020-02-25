@@ -3,9 +3,7 @@
 
 #include "audio_IO_t.h"
 
-audio_IO_t init_audio(int requests_per_second);
-
-void get_audio_data(audio_IO_t audiodata);
+void init_audio(audio_IO_t *audiodata, int requests_per_second);
 
 void free_audio(audio_IO_t* audiodata);
 

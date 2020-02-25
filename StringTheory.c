@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
       fprintf(stderr, "Failed to initialize SDL\n");
       return -1;
    }
-   audiodata = init_audio(sps);
+   init_audio(&audiodata, sps);
    fftdata = init_fft(audiodata.buffsize, 1.0/(audiodata.audiodevice.freq));
 
    // initialize GTK for GUI handling
@@ -141,8 +141,6 @@ int main(int argc, char **argv) {
 }
 
 gboolean update_audio_data(){
-   // get audio data 
-   get_audio_data(audiodata);
    // perform fourier transformation
    perform_fft(audiodata.buffer, fftdata);
    // estimate the most prominent frequency

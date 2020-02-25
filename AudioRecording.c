@@ -31,7 +31,8 @@ int main(){
          SDL_bool done = SDL_FALSE;
          
          //audio_IO_t audiodata = init_audio(SCREEN_WIDTH);
-         audio_IO_t audiodata = init_audio(FPS);
+         audio_IO_t audiodata;
+         init_audio(&audiodata, FPS);
          fft_t fftdata = init_fft(audiodata.buffsize, 1.0/(audiodata.audiodevice.freq));
 
          unsigned int frameStart, frameEnd;
@@ -42,7 +43,7 @@ int main(){
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
             SDL_RenderClear(renderer);
 
-            get_audio_data(audiodata);
+            // Audio input stream is automatically updated by callback function
             perform_fft(audiodata.buffer, fftdata);
 
             plot_dataf(audiodata.buffsize, audiodata.buffer, 1*SCREEN_HEIGHT/4, 100, renderer);

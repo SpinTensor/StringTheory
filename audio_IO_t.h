@@ -8,7 +8,6 @@ typedef struct {
    int buffsize;
    // buffer for audio input
    float* buffer;
-   //
    // SDL audio device information
    SDL_AudioSpec wanteddev;
    SDL_AudioSpec audiodevice;
