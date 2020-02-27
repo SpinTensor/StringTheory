@@ -15,8 +15,9 @@
 // Global Window
 GtkWidget *window;
 GtkWidget *GlobalFixed;
-  // Menu Bar
-  GtkWidget *menuBar;
+  // Select window function for fft
+  GtkWidget *SetWindowFunction;
+  GtkWidget *WindowFunctionEntry;
 
   // Three drawing areas
   // Raw audio signal
@@ -59,6 +60,10 @@ int main(int argc, char **argv) {
      g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
      GlobalFixed = GTK_WIDGET(gtk_builder_get_object(builder, "GlobalFixed"));
 
+     // Selector for the window function
+     SetWindowFunction = GTK_WIDGET(gtk_builder_get_object(builder, "SetWindowFunction"));
+     WindowFunctionEntry = GTK_WIDGET(gtk_builder_get_object(builder, "WindowFunctionEntry"));
+
      // The two drawing areas
      drawAudio = GTK_WIDGET(gtk_builder_get_object(builder, "drawAudio"));
      drawFrequencySpectrum = GTK_WIDGET(gtk_builder_get_object(builder, "drawFrequencySpectrum"));
@@ -74,6 +79,9 @@ int main(int argc, char **argv) {
 
    // functions to be called repeatedly throughout runtime
    g_timeout_add(1000/sps, (GSourceFunc) update_audio_data, NULL);
+
+   // remaining GTK initializations
+   gtk_combo_box_set_active(GTK_COMBO_BOX(SetWindowFunction), (int) fftdata.winfunc);
 
    // Run GTK-Gui
    gtk_main();
@@ -203,4 +211,12 @@ gboolean on_drawFrequencySpectrum_draw(GtkWidget *widget, cairo_t *cr, gpointer 
    }
 
    return false;
+}
+
+void on_SetWindowFunction_changed(GtkComboBox *cb) {
+   fftdata.winfunc = (winfunc_t) gtk_combo_box_get_active(GTK_COMBO_BOX(SetWindowFunction));
+   return;
+}
+void on_WindowFunctionEntry_changed(GtkEntry *e) {
+   return;
 }
