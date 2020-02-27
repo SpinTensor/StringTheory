@@ -2,6 +2,7 @@
 #define FFT_T_H
 
 #include <fftw3.h>
+#include "window_functions.h"
 
 typedef struct {
    // size of fouriertransform arrays
@@ -19,6 +20,8 @@ typedef struct {
    double* freqs;
    // fourier transformation plan
    fftw_plan plan;
+   // window function for prefiltering
+   winfunc_t winfunc;
 } fft_t;
 
 #endif
